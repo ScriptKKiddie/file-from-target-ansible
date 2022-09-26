@@ -1,0 +1,35 @@
+---
+- name: "Running ls {{ listing_folder }}"
+  command: "ls {{ listing_folder }}"
+  register: root_ls
+  become: true
+
+- name: "Debug All"
+  debug:
+    msg: "{{ root_ls }}"
+
+- name: "Debug list"
+  debug:
+    msg: "{{ root_ls.stdout_lines }}"
+
+- name: "Creating {{ local_dst }}"
+  file:
+    path: "{{ local_dst }}"
+    state: directory
+    mode: '0755'
+
+- name: "Copying"
+  copy:
+    content: "{{ root_ls.stdout }}"
+    dest: "{{ local_dst }}/single.txt"
+  when: end_op == "single"
+  become: true
+
+- name: "Creating files"
+  file:
+    path: "{{ local_dst }}/{{ item }}.txt"
+    state: touch
+  loop: "{{ root_ls.stdout_lines }}"
+  when: end_op == "all"
+  become: true
+...
